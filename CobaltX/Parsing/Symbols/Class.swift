@@ -1,0 +1,292 @@
+//
+//  Class.swift
+//  CobaltX
+//
+//  Created by Vincent Coetzee on 2020/02/26.
+//  Copyright © 2020 Vincent Coetzee. All rights reserved.
+//
+
+import Foundation
+
+public class Class:ContainerSymbol
+    {
+    public var superclasses:[Class] = []
+    private var slots:[Slot] = []
+    private var classSlots:[Slot] = []
+    private var genericTypes:[GenericParameter] = []
+    private var _class = Class(shortName:"Nothing")
+    
+    public class func parseClassDeclaration(from parser:Parser) throws -> Class
+        {
+        let accessModifier = parser.currentAccessModifier
+        try parser.nextToken()
+        let name = try parser.matchIdentifier(error: CompilerError.classNameExpected)
+        var generics:[GenericParameter] = []
+        if parser.token.isLeftBrocket
+            {
+            generics = try parser.parseGenericTypes()
+            }
+        var superclasses:[Class] = []
+        if parser.token.isGluon
+            {
+            try parser.nextToken()
+            if parser.token.isLeftPar
+                {
+                try parser.parseParentheses
+                    {
+                    repeat
+                        {
+                        try parser.eatIfComma()
+                        superclasses = try parser.parseClassReferences()
+                        }
+                    while parser.token.isComma
+                    }
+                }
+            }
+        let scope = parser.scopeCurrent.localScope()
+        scope.addSymbols(generics)
+        let slots = try self.parseSlots(from: parser)
+        var theClass:Class
+        if let aClass = parser.scopeCurrent.lookup(shortName: name) as? Class
+            {
+            theClass = aClass
+            if aClass.wasDeclaredForward
+                {
+                aClass.superclasses = superclasses
+                }
+            else
+                {
+                throw(CompilerError.duplicateClassDefinition(name))
+                }
+            }
+        else
+            {
+            theClass = Class(name: name,superclasses: superclasses)
+            parser.scopeCurrent.addSymbol(theClass)
+            }
+        theClass.accessLevel = accessModifier
+        theClass.slots = slots.filter{!$0.isClassSlot}
+        theClass.classSlots = slots.filter{$0.isClassSlot}
+        theClass.genericTypes = generics
+        scope.pop()
+        return(theClass)
+        }
+        
+    private class func parseSlots(from parser:Parser) throws -> [Slot]
+        {
+        var slots:[Slot] = []
+        try parser.parseBraces
+            {
+            while !parser.token.isRightBrace
+                {
+                slots.append(try self.parseSlot(from: parser))
+                }
+            }
+        return(slots)
+        }
+        
+    private class func parseSlot(from parser:Parser) throws -> Slot
+        {
+        if parser.token.isAt
+            {
+            try parser.parseDirective()
+            }
+        var slot:Slot?
+        try parser.parseAccessModifier()
+            {
+            accessModifier in
+            if parser.token.isVirtual
+                {
+                slot = try self.parseVirtualSlot(from: parser)
+                }
+            else if parser.token.isConstant
+                {
+                slot = try self.parseConstantSlot(from: parser)
+                }
+            else
+                {
+                slot = try self.parseRegularSlot(from: parser)
+                }
+            slot?.accessLevel = accessModifier
+            }
+        return(slot!)
+        }
+        
+    public class func parseRegularSlot(from parser:Parser) throws -> Slot
+        {
+        var isClass = false
+        if parser.token.isClass
+            {
+            isClass = true
+            try parser.nextToken()
+            }
+        if !parser.token.isSlot
+            {
+            throw(CompilerError.slotExpected)
+            }
+        try parser.nextToken()
+        let name = try parser.matchIdentifier(error: CompilerError.slotNameExpected)
+        var typeClass:Class?
+        var value:Expression?
+        if parser.token.isGluon
+            {
+            try parser.matchGluon()
+            typeClass = try parser.parseClassReference()
+            }
+        else if parser.token.isAssign
+            {
+            try parser.nextToken()
+            value = try  parser.parseExpression()
+            }
+        if typeClass == nil && value == nil
+            {
+            throw(CompilerError.slotRequiresInitialValueOrTypeClass)
+            }
+        else if typeClass == nil
+            {
+            typeClass = value!.class
+            }
+        let slot = Slot(name: name,class:typeClass!,isClassSlot: isClass,value: try parser.parseExpression())
+        slot.isClassSlot = isClass
+        return(slot)
+        }
+        
+    public class func parseConstantSlot(from parser:Parser) throws -> Slot
+        {
+        var isClass = false
+        try parser.nextToken()
+        if parser.token.isClass
+            {
+            isClass = true
+            try parser.nextToken()
+            }
+        if !parser.token.isSlot
+            {
+            throw(CompilerError.slotExpected)
+            }
+        try parser.nextToken()
+        let name = try parser.matchIdentifier(error: CompilerError.slotNameExpected)
+        var typeClass = Package.rootPackage.objectClass
+        if parser.token.isGluon
+            {
+            try parser.matchGluon()
+            typeClass = try parser.parseClassReference()
+            }
+        if !parser.token.isAssign
+            {
+            throw(CompilerError.assignExpected)
+            }
+        try parser.nextToken()
+        let slot = ConstantSlot(name: name,class:typeClass,isClassSlot:isClass,value: try parser.parseExpression())
+        slot.isClassSlot = isClass
+        return(slot)
+        }
+        
+    private class func parseVirtualSlot(from parser:Parser) throws -> Slot
+        {
+        var isClass = false
+        try parser.nextToken()
+        if parser.token.isClass
+            {
+            isClass = true
+            try parser.nextToken()
+            }
+        if !parser.token.isSlot
+            {
+            throw(CompilerError.slotExpected)
+            }
+        try parser.nextToken()
+        let name = try parser.matchIdentifier(error: CompilerError.slotNameExpected)
+        if !parser.token.isGluon
+            {
+            throw(CompilerError.gluonExpected)
+            }
+        try parser.nextToken()
+        let typeClass = try parser.parseClassReference()
+        var readBlock:VirtualSlotBlock?
+        var writeBlock:VirtualSlotBlock?
+        try parser.parseBraces
+            {
+            if parser.token.isRead
+                {
+                readBlock = try parser.parseVirtualSlotBlock()
+                }
+            else if parser.token.isWrite
+                {
+                writeBlock = try parser.parseVirtualSlotBlock(typeClass:typeClass)
+                }
+            else
+                {
+                readBlock = try parser.parseVirtualSlotBlock()
+                }
+            if writeBlock == nil && parser.token.isWrite
+                {
+                writeBlock = try parser.parseVirtualSlotBlock(typeClass:typeClass)
+                }
+            else if readBlock == nil && parser.token.isRead
+                {
+                readBlock = try parser.parseVirtualSlotBlock()
+                }
+            }
+        if readBlock == nil
+            {
+            throw(CompilerError.virtualSlotMustDefineReadBlock(name))
+            }
+        let slot = VirtualSlot(name: name,class: typeClass)
+        slot.readBlock = readBlock!
+        slot.writeBlock = writeBlock
+        slot.isClassSlot = isClass
+        return(slot)
+        }
+        
+    public init(name:String = "",superclasses:[Class] = [])
+        {
+        self.superclasses = superclasses
+        super.init(shortName: name)
+        }
+        
+    public func isSubclass(of theClass:Class) -> Bool
+        {
+        if self == theClass
+            {
+            return(true)
+            }
+        for someClass in self.superclasses
+            {
+            if someClass.isSubclass(of: theClass)
+                {
+                return(true)
+                }
+            }
+        return(false)
+        }
+        
+    public override var isPackageLevelSymbol:Bool
+        {
+        return(true)
+        }
+        
+    public override var `class`:Class
+        {
+        get
+            {
+            return(self._class)
+            }
+        set
+            {
+            self._class = newValue
+            }
+        }
+        
+    public init(shortName:String)
+        {
+        super.init(shortName: shortName)
+        }
+        
+    @discardableResult
+    public func addSlot(name:String,class:Class) -> Self
+        {
+        self.slots.append(Slot(name:name,class:`class`,owner:self))
+        return(self)
+        }
+    }
