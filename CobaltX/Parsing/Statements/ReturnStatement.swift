@@ -10,8 +10,16 @@ import Foundation
 
 public class ReturnStatement:Statement
     {
+    public let argument:Argument?
+    
     public class func parseReturnStatement(from parser:Parser) throws -> ReturnStatement
         {
         fatalError("\(#function) has not been implemented yet")
+        }
+        
+    public init(argument:Argument? = nil)
+        {
+        self.argument = argument
+        super.init()
         }
     }

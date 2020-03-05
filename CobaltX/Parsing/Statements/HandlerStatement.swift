@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class HandlerStatement:Statement
+public class HandlerStatement:BlockStatement
     {
     public class func parseHandlerStatement(from parser:Parser) throws -> HandlerStatement
         {

@@ -17,7 +17,7 @@ public class Package:ContainerSymbol
         return(token.isPackage)
         }
         
-    public class func parsePackageDeclaration(from parser:Parser) throws -> Package
+    public class func parsePackage(from parser:Parser) throws -> Package
         {
         if parser.token.isAt
             {
@@ -37,7 +37,7 @@ public class Package:ContainerSymbol
             package?.push()
             if parser.token.isLeftBrocket
                 {
-                package!.genericTypes = try parser.parseGenericTypes()
+                package!.genericTypes = try GenericParameter.parseGenericParameters(from: parser)
                 for type in package!.genericTypes
                     {
                     package!.addSymbol(type)
@@ -60,21 +60,21 @@ public class Package:ContainerSymbol
                             switch(parser.token.keyword)
                                 {
                                 case .package:
-                                    symbol = try Package.parsePackageDeclaration(from: parser)
+                                    symbol = try Package.parsePackage(from: parser)
                                 case .method:
-                                    symbol = try Method.parseMethodDeclaration(from: parser)
+                                    symbol = try Method.parseMethod(from: parser)
                                 case .let:
-                                    symbol = try Variable.parseVariableDeclaration(from: parser)
+                                    symbol = try Variable.parseVariable(from: parser)
                                 case .constant:
-                                    symbol = try Constant.parseConstantDeclaration(from: parser)
+                                    symbol = try Constant.parseConstant(from: parser)
                                 case .alias:
-                                    symbol = try Alias.parseAliasDeclaration(from: parser)
+                                    symbol = try Alias.parseAlias(from: parser)
                                 case .class:
-                                    symbol = try Class.parseClassDeclaration(from: parser)
+                                    symbol = try Class.parseClass(from: parser)
                                 case .enumeration:
-                                    symbol = try Enumeration.parseEnumerationDeclaration(from: parser)
+                                    symbol = try Enumeration.parseEnumeration(from: parser)
                                 case .macro:
-                                    symbol = try Macro.parseMacroDeclaration(from: parser)
+                                    symbol = try Macro.parseMacro(from: parser)
                                 default:
                                     throw(CompilerError.packageLevelKeywordExpected)
                                 }

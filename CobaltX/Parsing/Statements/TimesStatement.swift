@@ -8,10 +8,18 @@
 
 import Foundation
 
-public class TimesStatement:Statement
+public class TimesStatement:BlockStatement
     {
+    public let count:Expression
+    
     public class func parseTimesStatement(from parser:Parser) throws -> TimesStatement
         {
         fatalError("\(#function) has not been implemented yet")
+        }
+        
+    public init(count:Expression)
+        {
+        self.count = count
+        super.init()
         }
     }

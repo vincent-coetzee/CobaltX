@@ -10,7 +10,7 @@ import Foundation
 
 public class Constant:Variable
     {
-    public class func parseConstantDeclaration(from:Parser) throws -> Constant
+    public class func parseConstant(from:Parser) throws -> Constant
         {
         fatalError("Not implemented")
         }

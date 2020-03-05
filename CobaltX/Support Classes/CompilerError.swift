@@ -39,5 +39,9 @@ public enum CompilerError:Error
     case undefinedValue(String)
     case tagExpectedInTupleDeclaration
     case tagExpectedInClosureWithClause
+    case tagExpectedBeforeParameterArgument
     case identifierExpected
+    case rightBracketExpectedAfterSubscript
+    case variableMustContainExecutable
+    case enumerationCaseExpected
     }

@@ -8,11 +8,11 @@
 
 import Foundation
 
-public class Closure:Block,Parsing
+public class Closure:Block
     {
     private var parameters:[Parameter] = []
     
-    public static func parse(from parser:Parser) throws -> ParseNode
+    public static func parseClosure(from parser:Parser) throws -> Closure
         {
         try parser.nextToken()
         let closure = Closure()

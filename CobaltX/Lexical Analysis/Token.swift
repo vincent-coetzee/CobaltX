@@ -66,11 +66,11 @@ public enum Token:Equatable,CustomStringConvertible
     public enum Keyword:String,CaseIterable,Equatable
         {
         case Anything
-//        case Array
+        case Array
         case alias
         case `as`
-//        case field
-//        case BitSet
+        case field
+        case BitSet
         case Boolean
         case Byte8
         case cfunction
@@ -78,7 +78,7 @@ public enum Token:Equatable,CustomStringConvertible
         case children
         case `class`
         case constant
-//        case Dictionary
+        case Dictionary
         case `else`
         case enumeration
         case export
@@ -117,7 +117,7 @@ public enum Token:Equatable,CustomStringConvertible
         case run
         case sealed
         case select
-//        case Set
+        case Set
         case signal
         case Signed64
         case Signed32
@@ -143,30 +143,6 @@ public enum Token:Equatable,CustomStringConvertible
         case with
         case write
         }
-        
-//    public static let textIndex = 0
-//    public static let keywordIndex = 5
-//    public static let commentIndex = 2
-//    public static let endIndex = 3
-//    public static let identifierIndex = 4
-//    public static let operatorIndex = 6
-//    public static let symbolStringIndex = 10
-//    public static let stringIndex = 7
-//    public static let integerIndex = 8
-//    public static let floatingPointIndex = 9
-//    public static let symbolIndex = 11
-//    public static let nativeTypeIndex = 12
-//    public static let aliasIndex = 13
-//    public static let variableIndex = 21
-//    public static let constantIndex = 14
-//    public static let tagIndex = 15
-//    public static let methodIndex = 17
-//    public static let enumerationIndex = 18
-//    public static let genericTypeIndex = 19
-//    public static let shardIndex = 1
-//    public static let noneIndex = 20
-//    public static let byteIndex = 22
-//    public static let customIndex = 23
     
     public static func ==(lhs:Token,rhs:Token) -> Bool
         {
@@ -196,22 +172,8 @@ public enum Token:Equatable,CustomStringConvertible
                 return(s1 == s2)
             case let (.nativeType(s1,_),.nativeType(s2,_)):
                 return(s1 == s2)
-//            case let (.alias(s1,_),.alias(s2,_)):
-//                return(s1 == s2)
-//            case let (.variable(s1,_),.variable(s2,_)):
-//                return(s1 == s2)
-//            case let (.constant(s1,_),.constant(s2,_)):
-//                return(s1 == s2)
             case let (.tag(s1,_),.tag(s2,_)):
                  return(s1 == s2)
-//            case let (.enumeration(s1,_),.enumeration(s2,_)):
-//                 return(s1 == s2)
-//             case let (.genericType(s1,_),.genericType(s2,_)):
-//                 return(s1 == s2)
-//             case let (.shard(s1,_),.shard(s2,_)):
-//                 return(s1 == s2)
-//            case let (.byte(s1,_),.byte(s2,_)):
-//                return(s1 == s2)
             case let (.operator(s1,_),.operator(s2,_)):
                 return(s1 == s2)
             default:
@@ -549,51 +511,6 @@ public enum Token:Equatable,CustomStringConvertible
                 fatalError("This should not be called on a NeonToken of class \(Swift.type(of: self))")
             }
         }
-        
-//    public var alias:Alias
-//        {
-//        switch(self)
-//            {
-//            case .alias(let value,_):
-//                return(value)
-//            default:
-//                fatalError("This should not be called on a NeonToken of class \(Swift.type(of: self))")
-//            }
-//        }
-//
-//    public var constant:Constant
-//        {
-//        switch(self)
-//            {
-//            case .constant(let value,_):
-//                return(value)
-//            default:
-//                fatalError("This should not be called on a NeonToken of class \(Swift.type(of: self))")
-//            }
-//        }
-//
-//    public var enumeration:Enumeration
-//        {
-//        switch(self)
-//            {
-//            case .enumeration(let value,_):
-//                return(value)
-//            default:
-//                fatalError("This should not be called on a NeonToken of class \(Swift.type(of: self))")
-//            }
-//        }
-//
-//    public var genericType:GenericType
-//        {
-//        switch(self)
-//            {
-//            case .genericType(let value,_):
-//                return(value)
-//            default:
-//                fatalError("This should not be called on a NeonToken of class \(Swift.type(of: self))")
-//            }
-//        }
-        
 
     public var isNativeType:Bool
         {
@@ -606,6 +523,61 @@ public enum Token:Equatable,CustomStringConvertible
             }
         }
     
+    public var isArray:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .Array)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isSet:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .Set)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isDictionary:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .Dictionary)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isList:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .List)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isBitSet:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .BitSet)
+            default:
+                return(false)
+            }
+        }
+        
     public var isNil:Bool
         {
         switch(self)
@@ -1082,17 +1054,6 @@ public enum Token:Equatable,CustomStringConvertible
             }
         }
         
-    public var isUpperThis:Bool
-        {
-        switch(self)
-            {
-            case .keyword(let value,_):
-                return(value == .This)
-            default:
-                return(false)
-            }
-        }
-        
     public var isLowerThis:Bool
         {
         switch(self)
@@ -1224,18 +1185,7 @@ public enum Token:Equatable,CustomStringConvertible
                 return(false)
             }
         }
-        
-    public var isThisUpperT:Bool
-        {
-        switch(self)
-            {
-            case .keyword(let keyword,_):
-                return(keyword == .This)
-            default:
-                return(false)
-            }
-        }
-        
+
     public var isThis:Bool
         {
         switch(self)
@@ -1392,13 +1342,13 @@ public enum Token:Equatable,CustomStringConvertible
         switch(self)
             {
             case .keyword(let keyword,_):
-                return(keyword == .This)
+                return(keyword == .this)
             case .nativeType(let value,_):
                 switch(value)
                     {
                     case .Tuple:
                         return(true)
-                    case .This:
+                    case .this:
                         return(true)
                     case .Signed64:
                         return(true)

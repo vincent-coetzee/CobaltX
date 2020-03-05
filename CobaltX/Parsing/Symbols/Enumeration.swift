@@ -10,7 +10,7 @@ import Foundation
 
 public class Enumeration:ContainerSymbol
     {
-    public class func parseEnumerationDeclaration(from parser:Parser) throws -> Enumeration
+    public class func parseEnumeration(from parser:Parser) throws -> Enumeration
         {
         let accessModifier = parser.currentAccessModifier
         try parser.nextToken()
@@ -27,7 +27,7 @@ public class Enumeration:ContainerSymbol
             var index = 0
             repeat
                 {
-                let theCase = try EnumerationCase.parse(from: parser) as! EnumerationCase
+                let theCase = try EnumerationCase.parseEnumerationCase(from: parser)
                 theCase.caseIndex = index
                 index += 1
                 enumeration.cases.append(theCase)
@@ -56,5 +56,17 @@ public class Enumeration:ContainerSymbol
         {
         self._typeClass = `class`
         super.init(shortName: name)
+        }
+        
+    public override func lookup(shortName:String) -> Symbol?
+        {
+        for aCase in self.cases
+            {
+            if aCase.shortName == shortName
+                {
+                return(aCase)
+                }
+            }
+        return(nil)
         }
     }

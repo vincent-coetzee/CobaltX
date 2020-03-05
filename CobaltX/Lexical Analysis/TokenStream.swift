@@ -462,13 +462,13 @@ public class TokenStream:Equatable
     
     public func nextPositiveInteger() throws -> Token
         {
-        var number:Int = 0
+        var number:Cobalt.Integer = 0
         while digits.contains(self.currentChar) && !atEnd
             {
             if digits.contains(self.currentChar)
                 {
                 number *= 10
-                number += Int(String(self.currentChar))!
+                number += Cobalt.Integer(String(self.currentChar))!
                 self.nextChar()
                 }
             }
@@ -514,7 +514,7 @@ public class TokenStream:Equatable
                 {
                 nextChar()
                 self.pushBack(.symbol(.range,self.sourceLocation()))
-                return(.integer(Int(number),self.sourceLocation()))
+                return(.integer(Cobalt.Integer(number),self.sourceLocation()))
                 }
             var factor = Double(0.0)
             var divisor = 10
@@ -533,7 +533,7 @@ public class TokenStream:Equatable
                 }
             return(.floatingPoint(Double(Double(number)+factor),self.sourceLocation()))
             }
-        return(.integer(Int(number),self.sourceLocation()))
+        return(.integer(Cobalt.Integer(number),self.sourceLocation()))
         }
     
     private func nextHexNumber() throws -> Token
@@ -563,7 +563,7 @@ public class TokenStream:Equatable
                 }
             nextChar()
             }
-        return(.integer(Int(hexValue),self.sourceLocation()))
+        return(.integer(Cobalt.Integer(hexValue),self.sourceLocation()))
         }
     
     private func nextBinaryNumber() throws -> Token
@@ -579,7 +579,7 @@ public class TokenStream:Equatable
                 }
             nextChar()
             }
-        return(.integer(Int(binaryValue),self.sourceLocation()))
+        return(.integer(Cobalt.Integer(binaryValue),self.sourceLocation()))
         }
     
 //    private func nextByte() throws -> Token

@@ -13,10 +13,10 @@ public class Class:ContainerSymbol
     public var superclasses:[Class] = []
     private var slots:[Slot] = []
     private var classSlots:[Slot] = []
-    private var genericTypes:[GenericParameter] = []
+    private var genericParameters:[GenericParameter] = []
     private var _class = Class(shortName:"Nothing")
     
-    public class func parseClassDeclaration(from parser:Parser) throws -> Class
+    public class func parseClass(from parser:Parser) throws -> Class
         {
         let accessModifier = parser.currentAccessModifier
         try parser.nextToken()
@@ -24,7 +24,7 @@ public class Class:ContainerSymbol
         var generics:[GenericParameter] = []
         if parser.token.isLeftBrocket
             {
-            generics = try parser.parseGenericTypes()
+            generics = try GenericParameter.parseGenericParameters(from: parser)
             }
         var superclasses:[Class] = []
         if parser.token.isGluon
@@ -67,9 +67,59 @@ public class Class:ContainerSymbol
         theClass.accessLevel = accessModifier
         theClass.slots = slots.filter{!$0.isClassSlot}
         theClass.classSlots = slots.filter{$0.isClassSlot}
-        theClass.genericTypes = generics
+        theClass.genericParameters = generics
         scope.pop()
         return(theClass)
+        }
+        
+    public class func parseClassReference(from parser: Parser) throws -> Class
+        {
+        if parser.token.isArray
+            {
+            return(try ArrayClass.parseArrayClassReference(from: parser))
+            }
+        else if parser.token.isSet
+            {
+            return(try SetClass.parseSetClassReference(from: parser))
+            }
+        else if parser.token.isList
+            {
+            return(try ListClass.parseListClassReference(from: parser))
+            }
+        else if parser.token.isBitSet
+            {
+            return(try BitSetClass.parseBitSetClassReference(from: parser))
+            }
+        else if parser.token.isDictionary
+            {
+            return(try DictionaryClass.parseDictionaryClassReference(from: parser))
+            }
+        else if parser.token.isIdentifier
+            {
+            let name = try parser.parseName()
+            var theClass:Class?
+            if let aClass = parser.scopeCurrent.lookup(name: name) as? Class
+                {
+                theClass = aClass
+                }
+            var generics:[GenericParameter]?
+            if parser.token.isLeftBrocket
+                {
+                generics = try GenericParameter.parseGenericParameters(from: parser)
+                }
+            if theClass != nil && generics != nil
+                {
+                return(theClass!.instantiate(with: generics!))
+                }
+            let newClass = Class(shortName: name.last)
+            (parser.scopeCurrent.lookup(name: name.withoutLast()) as? Scope)?.addSymbol(newClass)
+            newClass.wasDeclaredForward = true
+            return(newClass)
+            }
+        else
+            {
+            throw(CompilerError.classNameExpected)
+            }
         }
         
     private class func parseSlots(from parser:Parser) throws -> [Slot]
@@ -278,8 +328,9 @@ public class Class:ContainerSymbol
             }
         }
         
-    public init(shortName:String)
+    public init(shortName:String,superclasses:[Class] = [])
         {
+        self.superclasses = superclasses
         super.init(shortName: shortName)
         }
         
@@ -288,5 +339,10 @@ public class Class:ContainerSymbol
         {
         self.slots.append(Slot(name:name,class:`class`,owner:self))
         return(self)
+        }
+        
+    public func instantiate(with:[GenericParameter]) -> GenericClass
+        {
+        fatalError("\(#function) has not been implemented")
         }
     }

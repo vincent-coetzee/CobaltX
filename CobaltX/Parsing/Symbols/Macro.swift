@@ -10,7 +10,7 @@ import Foundation
 
 public class Macro:Symbol
     {
-    public class func parseMacroDeclaration(from parser:Parser) throws -> Macro
+    public class func parseMacro(from parser:Parser) throws -> Macro
         {
         fatalError("Not implemented")
         }

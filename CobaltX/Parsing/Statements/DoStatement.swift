@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class DoStatement:Statement
+public class DoStatement:BlockStatement
     {
     public class func parseDoStatement(from parser:Parser) throws -> DoStatement
         {

@@ -10,8 +10,16 @@ import Foundation
 
 public class RunStatement:Statement
     {
+    public let argument:Argument
+    
     public class func parseRunStatement(from parser:Parser) throws -> RunStatement
         {
         fatalError("\(#function) has not been implemented yet")
+        }
+        
+    public init(argument:Argument)
+        {
+        self.argument = argument
+        super.init()
         }
     }

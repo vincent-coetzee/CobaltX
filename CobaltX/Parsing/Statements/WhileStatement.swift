@@ -8,10 +8,18 @@
 
 import Foundation
 
-public class WhileStatement:Statement
+public class WhileStatement:BlockStatement
     {
+    public let condition:Expression
+    
     public class func parseWhileStatement(from parser:Parser) throws -> WhileStatement
         {
         fatalError("\(#function) has not been implemented yet")
+        }
+        
+    public init(condition:Expression)
+        {
+        self.condition = condition
+        super.init()
         }
     }

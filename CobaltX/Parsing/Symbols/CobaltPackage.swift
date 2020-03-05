@@ -73,6 +73,21 @@ public class CobaltPackage:Package
         return(self.lookup(shortName:"Enumeration") as! Class)
         }
         
+    public var tupleClass:Class
+        {
+        return(self.lookup(shortName:"Tuple") as! Class)
+        }
+        
+    public var closureClass:Class
+        {
+        return(self.lookup(shortName:"Closure") as! Class)
+        }
+        
+    public var methodClass:Class
+        {
+        return(self.lookup(shortName:"Method") as! Class)
+        }
+        
     public func initCobaltPackage() -> Self
         {
         self.objectClass.class = self.classClass
@@ -87,9 +102,11 @@ public class CobaltPackage:Package
         self.createAndAddClass(named:"Thread",superclasses: [executableClass])
         self.createAndAddClass(named:"Method",superclasses: [executableClass])
         self.createAndAddClass(named:"MethodInstance",superclasses: [executableClass])
+        self.createAndAddClass(named:"Closure",superclasses: [executableClass])
         let enumeratedValueClass = self.createAndAddClass(named:"EnumeratedValue",superclasses: [self.objectClass])
         self.createAndAddClass(named:"Enumeration",superclasses: [enumeratedValueClass])
         self.createAndAddClass(named:"EnumerationCase",superclasses: [self.objectClass])
+        self.createAndAddClass(named:"Tuple",superclasses: [self.objectClass])
         let numberClass = self.createAndAddClass(named:"Number",superclasses: [magnitudeClass])
         let floatClass = self.createAndAddClass(named:"Float",superclasses: [numberClass])
         self.createAndAddValueClass(named:"Float32",superclasses: [floatClass])
@@ -125,7 +142,7 @@ public class CobaltPackage:Package
     @discardableResult
     private func createAndAddGenericClass(named:String,superclasses:[Class]) -> Class
         {
-        let theClass = GenericClass(name: named,superclasses:superclasses,genericParameters: [])
+        let theClass = GenericClass(shortName: named,superclasses:superclasses)
         theClass.class = self.classClass
         self.addSymbol(theClass)
         return(theClass)

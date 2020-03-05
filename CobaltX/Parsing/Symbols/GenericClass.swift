@@ -12,14 +12,9 @@ public class GenericClass:Class
     {
     public var genericParameters:[GenericParameter] = []
     
-    public init(name:String,superclasses:[Class] = [],genericParameters:[GenericParameter])
+    public init(shortName:String,superclasses:[Class] = [],genericParameters:[GenericParameter] = [])
         {
         self.genericParameters = genericParameters
-        super.init(name: name,superclasses: superclasses)
-        }
-        
-    public func insanciate(with parameters:[GenericParameterInstance])
-        {
-        
+        super.init(shortName: shortName,superclasses: superclasses)
         }
     }

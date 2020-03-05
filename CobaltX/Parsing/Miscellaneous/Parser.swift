@@ -48,7 +48,7 @@ public class Parser
     public func parse() throws -> Package
         {
         try self.nextToken()
-        return(try Package.parse(from: self) as! Package)
+        return(try Package.parsePackage(from: self))
         }
         
     public func pushScope(_ scope:Scope)
@@ -138,7 +138,7 @@ public class Parser
             try self.parseParentheses
                 {
                 let name = try self.matchIdentifier(error: CompilerError.newValueNameExpected)
-                let parameter = Parameter(name: name,class: aClass)
+                let parameter = Parameter(shortName: name,class: aClass)
                 block.addSymbol(parameter)
                 }
             }
@@ -146,7 +146,7 @@ public class Parser
             {
             repeat
                 {
-                block.addStatement(try Statement.parse(from: self) as! Statement)
+                block.addStatement(try Statement.parseStatement(from: self))
                 }
             while !self.token.isRightBrace
             }
@@ -156,11 +156,6 @@ public class Parser
             }
         block.pop()
         return(block)
-        }
-        
-    public func parseExpression() throws -> Expression
-        {
-        return(Expression())
         }
         
     public func matchGluon() throws
@@ -177,19 +172,6 @@ public class Parser
         try self.nextToken()
         self.currentDirective = Directive(self.token.keyword)
         try self.nextToken()
-        }
-        
-    internal func parseGenericTypes() throws -> [GenericParameter]
-        {
-        var types:[GenericParameter] = []
-        try self.nextToken()
-        repeat
-            {
-            try types.append(self.parseGenericType())
-            }
-        while !self.token.isRightBrocket
-        try self.nextToken()
-        return(types)
         }
         
     public func parseClassReferences() throws -> [Class]
@@ -231,9 +213,19 @@ public class Parser
     public func parseClassReference() throws -> Class
         {
         let name = try self.parseName()
+        var theClass:Class?
         if let aClass = self.scopeCurrent.lookup(name: name) as? Class
             {
-            return(aClass)
+            theClass = aClass
+            }
+        var generics:[GenericParameter]?
+        if self.token.isLeftBrocket
+            {
+            generics = try GenericParameter.parseGenericParameters(from: self)
+            }
+        if theClass != nil && generics != nil
+            {
+            return(theClass!.instantiate(with: generics!))
             }
         let newClass = Class(name: name.last)
         (self.scopeCurrent.lookup(name: name.withoutLast()) as? Scope)?.addSymbol(newClass)
@@ -258,30 +250,132 @@ public class Parser
             }
         }
         
-    private func parseGenericType() throws -> GenericParameter
+    @inline(__always)
+    public func parseExpression() throws -> Expression
         {
-        if !self.token.isIdentifier
+        return(try self.parseLogicalOr())
+        }
+    
+    @inline(__always)
+    private func parseLogicalOr() throws -> Expression
+        {
+        var lhs = try self.parseLogicalAnd()
+        while self.token.isOr
             {
-            throw(CompilerError.genericTypeNameExpected)
+            try self.nextToken()
+            let rhs = try self.parseLogicalAnd()
+            lhs = BinaryExpression(lhs: lhs,operation: .or,rhs: rhs)
             }
-        let name = self.token.identifier
-        try self.nextToken()
-        if !self.token.isGluon
+        return(lhs)
+        }
+        
+    @inline(__always)
+    private func parseLogicalAnd() throws -> Expression
+        {
+        var lhs = try self.parseEquality()
+        while self.token.isAnd
             {
-            throw(CompilerError.gluonExpected)
+            try self.nextToken()
+            let rhs = try self.parseEquality()
+            lhs = BinaryExpression(lhs: lhs,operation: .and,rhs: rhs)
             }
-        try self.nextToken()
-        var constraints:[Class] = []
-        try self.parseParentheses
+        return(lhs)
+        }
+        
+    @inline(__always)
+    private func parseEquality() throws -> Expression
+        {
+        var lhs = try self.parseComparison()
+        while self.token.isEquals || self.token.isNotEquals
             {
-            repeat
-                {
-                try self.eatIfComma()
-                constraints.append(try self.parseClassReference())
-                }
-            while self.token.isComma
+            try self.nextToken()
+            let rhs = try self.parseComparison()
+            lhs = BinaryExpression(lhs: lhs,operation: .equals,rhs: rhs)
             }
-        return(GenericParameter(name: name,constraints: constraints))
+        return(lhs)
+        }
+        
+    @inline(__always)
+    private func parseComparison() throws -> Expression
+        {
+        var lhs = try self.parseBitwiseOperation()
+        while self.token.isLeftBrocket || self.token.isLeftBrocketEquals || self.token.isRightBrocket || self.token.isRightBrocketEquals
+            {
+            let operation = self.token.symbol
+            try self.nextToken()
+            let rhs = try self.parseBitwiseOperation()
+            lhs = BinaryExpression(lhs: lhs,operation: operation,rhs: rhs)
+            }
+        return(lhs)
+        }
+        
+    @inline(__always)
+    private func parseBitwiseOperation() throws -> Expression
+        {
+        var lhs = try self.parseAddition()
+        while self.token.isBitAnd || self.token.isBitOr || self.token.isBitNot || self.token.isBitShiftLeft || self.token.isBitShiftRight
+            {
+            let operation = self.token.symbol
+            try self.nextToken()
+            let rhs = try self.parseAddition()
+            lhs = BinaryExpression(lhs: lhs,operation: operation,rhs: rhs)
+            }
+        return(lhs)
+        }
+        
+    @inline(__always)
+    private func parseAddition() throws -> Expression
+        {
+        var lhs = try self.parseMultiplication()
+        while self.token.isSub || self.token.isAdd
+            {
+            let operation = self.token.symbol
+            try self.nextToken()
+            let rhs = try self.parseMultiplication()
+            lhs = BinaryExpression(lhs: lhs,operation: operation,rhs: rhs)
+            }
+        return(lhs)
+        }
+    
+    @inline(__always)
+    private func parseMultiplication() throws -> Expression
+        {
+        var lhs = try self.parseUnary()
+        while self.token.isDiv || self.token.isMul
+            {
+            let operation = self.token.symbol
+            try self.nextToken()
+            let rhs = try self.parseUnary()
+            lhs = BinaryExpression(lhs: lhs,operation: operation,rhs: rhs)
+            }
+        return(lhs)
+        }
+    
+    @inline(__always)
+    private func parseOperationAssignment() throws -> Expression
+        {
+        var lhs = try self.parseUnary()
+        while self.token.isDivEquals || self.token.isMulEquals || self.token.isAddEquals || self.token.isSubEquals || self.token.isBitAndEquals || self.token.isBitNotEquals || self.token.isBitOrEquals || self.token.isBitShiftLeftEquals || self.token.isBitShiftRightEquals
+            {
+            let operation = self.token.symbol
+            try self.nextToken()
+            let rhs = try self.parseUnary()
+            lhs = BinaryExpression(lhs: lhs,operation: operation,rhs: rhs)
+            }
+        return(lhs)
+        }
+        
+    @inline(__always)
+    private func parseUnary() throws -> Expression
+        {
+        if self.token.isNot || self.token.isSub || self.token.isBitNot
+            {
+            let operation = self.token.symbol
+            try self.nextToken()
+            let rhs = try self.parseUnary()
+            return(UnaryExpression(operation: operation,rhs: rhs))
+            }
+        return(try self.parsePrimary())
         }
         
     public func parseLiteralExpression() throws -> LiteralExpression
@@ -298,47 +392,74 @@ public class Parser
     @inline(__always)
     private func parseEnumerationExpression(enumeration:Enumeration) throws -> Expression
         {
-        fatalError("\(#function) should have been implemented")
-        }
-        
-    @inline(__always)
-    private func parseMethodExpression(method:Method) throws -> Expression
-        {
-        fatalError("\(#function) should have been implemented")
+        try self.nextToken()
+        if !self.token.isIdentifier
+            {
+            throw(CompilerError.enumerationCaseExpected)
+            }
+        let shortName = self.token.identifier
+        try self.nextToken()
+        if let aCase = enumeration.lookup(shortName: shortName) as? EnumerationCase
+            {
+            return(LiteralExpression(enumerationCase: aCase))
+            }
+        throw(CompilerError.enumerationCaseExpected)
         }
         
     @inline(__always)
     private func parseInvocationExpression(name:String) throws -> Expression
         {
-        fatalError("\(#function) should have been implemented")
+        let arguments = try Parameter.parseParameterArguments(from: self)
+        let method = Method(shortName: name)
+        method.wasDeclaredForward = true
+        self.scopeCurrent.addSymbol(method)
+        let methodInstance = MethodInstance(shortName: name)
+        methodInstance.parameters = arguments.map{Parameter($0)}
+        method.addInstance(methodInstance)
+        methodInstance.wasDeclaredForward = true
+        return(InvocationExpression(method:method,arguments:arguments))
         }
         
     @inline(__always)
     private func parseInvocationExpression(variable:Variable) throws -> Expression
         {
-        fatalError("\(#function) should have been implemented")
+        let arguments = try Parameter.parseParameterArguments(from: self)
+        if variable.class == Package.rootPackage.closureClass
+            {
+            return(InvocationExpression(closureVariable:variable,arguments:arguments))
+            }
+        else if variable.class == Package.rootPackage.methodClass
+            {
+            return(InvocationExpression(methodVariable:variable,arguments:arguments))
+            }
+        else
+            {
+            throw(CompilerError.variableMustContainExecutable)
+            }
+        }
+        
+    @inline(__always)
+    private func parseInvocationExpression(method:Method) throws -> Expression
+        {
+        let arguments = try Parameter.parseParameterArguments(from: self)
+        return(InvocationExpression(method:method,arguments:arguments))
         }
         
     @inline(__always)
     private func parseSubscriptedExpression(variable:Variable) throws -> Expression
         {
-        fatalError("\(#function) should have been implemented")
+        try self.nextToken()
+        let index = try self.parseExpression()
+        if !self.token.isRightBracket
+            {
+            throw(CompilerError.rightBracketExpectedAfterSubscript)
+            }
+        try self.nextToken()
+        return(index)
         }
         
     @inline(__always)
-    private func parseSlotValueExpression(variable:Variable) throws -> Expression
-        {
-        fatalError("\(#function) should have been implemented")
-        }
-        
-    @inline(__always)
-    private func parseEnumerationCaseExpression() throws -> Expression
-        {
-        fatalError("\(#function) should have been implemented")
-        }
-        
-    @inline(__always)
-    private func parseClosure() throws -> Closure
+    private func parseSlotExpression(variable:Variable) throws -> Expression
         {
         fatalError("\(#function) should have been implemented")
         }
@@ -372,13 +493,6 @@ public class Parser
             try self.nextToken()
             }
         return(LiteralExpression(tuple: tuple))
-        }
-    
-    @inline(__always)
-    public func parseArguments() throws -> [Argument]
-        {
-        fatalError("\(#function) should have been implemented")
-        return([])
         }
         
     @inline(__always)
@@ -428,11 +542,6 @@ public class Parser
         fatalError("\(#function) should have been implemented")
         }
         
-    public func parseParameter() throws -> Parameter
-        {
-
-        }
-        
     @inline(__always)
     private func parseIdentifierExpression() throws -> Expression
         {
@@ -479,7 +588,7 @@ public class Parser
                     let method = symbol as! Method
                     if self.token.isLeftPar
                         {
-                        return(try self.parseMethodExpression(method:method))
+                        return(try self.parseInvocationExpression(method:method))
                         }
                     else
                         {
@@ -501,7 +610,7 @@ public class Parser
                         }
                     if self.token.isStop
                         {
-                        return(try parseSlotValueExpression(variable: variable))
+                        return(try parseSlotExpression(variable: variable))
                         }
                     else if self.token.isLeftPar
                         {
@@ -542,7 +651,7 @@ public class Parser
             }
         else
             {
-            let symbol = Variable(name: name, class: Package.rootPackage.undefinedObjectClass)
+            let symbol = Variable(shortName: name, class: Package.rootPackage.undefinedObjectClass)
             symbol.addDeclaration(location: location)
             self.scopeCurrent.addSymbol(symbol)
             symbol.wasDeclaredForward = true
@@ -561,7 +670,7 @@ public class Parser
             }
         if self.token.isStop
             {
-            return(try self.parseEnumerationCaseExpression())
+            return(LiteralExpression(enumerationCase: try EnumerationCase.parseEnumerationCase(from: self)))
             }
         if self.token.isLeftBracket
             {
@@ -573,10 +682,10 @@ public class Parser
             }
         if self.token.isLeftBrace
             {
-            let closure = try self.parseClosure()
+            let closure = try Closure.parseClosure(from: self)
             if self.token.isLeftPar
                 {
-                let arguments = try self.parseArguments()
+                let arguments = try Parameter.parseParameterArguments(from: self)
                 return(ClosureValueExpression(closure: closure, arguments: arguments))
                 }
             return(LiteralExpression(closure: closure))

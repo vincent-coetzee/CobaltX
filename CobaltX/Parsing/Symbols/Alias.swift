@@ -10,8 +10,8 @@ import Foundation
 
 public class Alias:Symbol
     {
-    public class func parseAliasDeclaration(from:Parser) throws -> Alias
+    public class func parseAlias(from parser:Parser) throws -> Alias
         {
-        fatalError("Not implemented")
+        fatalError("\(#function) has not been implemented")
         }
     }

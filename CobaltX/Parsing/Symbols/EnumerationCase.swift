@@ -10,7 +10,7 @@ import Foundation
 
 public class EnumerationCase:Symbol
     {
-    public class func parse(from parser:Parser) throws -> ParseNode
+    public class func parseEnumerationCase(from parser:Parser) throws -> EnumerationCase
         {
         if !parser.token.isStop
             {

@@ -27,4 +27,5 @@ public struct Cobalt
     public typealias Character = UInt16
     public typealias Boolean = Bool
     public typealias Address = UInt64
+    public typealias UniqueString = String
     }

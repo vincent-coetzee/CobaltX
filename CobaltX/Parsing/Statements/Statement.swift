@@ -59,9 +59,8 @@ public class Statement:ParseNode
             }
         else if parser.token.isIdentifier
             {
-            let name = parser.parseNa
-            let name = parser.token.identifier
-            if let symbol = parser.scopeCurrent.lookup(shortName: name)
+            let name = try parser.parseName()
+            if let symbol = parser.scopeCurrent.lookup(name: name)
                 {
                 if symbol.isMethod || symbol.isClosure
                     {
@@ -81,7 +80,7 @@ public class Statement:ParseNode
         {
         while !parser.token.isRightBrace
             {
-            block.addStatement(try self.parseStatement(from: parser) as! Statement)
+            block.addStatement(try self.parseStatement(from: parser))
             }
         }
     }

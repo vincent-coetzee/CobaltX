@@ -14,6 +14,11 @@ public struct Argument
     public let tag:String?
     public var parameter:Parameter?
     
+    public var `class`:Class
+        {
+        return(value.class)
+        }
+        
     public init(tag:String? = nil,value:Expression,parameter:Parameter? = nil)
         {
         self.tag = tag

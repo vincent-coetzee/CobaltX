@@ -24,14 +24,14 @@ public class Variable:Symbol
         
     private var _class:Class
     
-    public class func parseVariableDeclaration(from:Parser) throws -> Variable
+    public class func parseVariable(from:Parser) throws -> Variable
         {
         fatalError("Not implemented")
         }
         
-    public init(name:String,class:Class)
+    public init(shortName:String,class:Class)
         {
         self._class = `class`
-        super.init(shortName:name)
+        super.init(shortName:shortName)
         }
     }

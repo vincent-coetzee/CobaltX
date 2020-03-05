@@ -10,6 +10,6 @@ import Foundation
 
 public class PseudoVariable:Constant
     {
-    public static let nilVariable = PseudoVariable(name:"nil",class: Package.rootPackage.undefinedObjectClass)
-    public static let thisVariable = PseudoVariable(name:"this",class: Package.rootPackage.classClass)
+    public static let nilVariable = PseudoVariable(shortName:"nil",class: Package.rootPackage.undefinedObjectClass)
+    public static let thisVariable = PseudoVariable(shortName:"this",class: Package.rootPackage.classClass)
     }

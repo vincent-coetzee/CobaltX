@@ -77,6 +77,8 @@ public indirect enum ValueBox
             return(Package.rootPackage.integerClass)
         case .expression(let value):
             return(value.class)
+        case .tuple(_):
+            return(Package.rootPackage.tupleClass)
             }
         }
     }

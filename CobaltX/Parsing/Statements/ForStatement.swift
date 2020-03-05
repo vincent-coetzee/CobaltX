@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class ForStatement:Statement
+public class ForStatement:BlockStatement
     {
     public class func parseForStatement(from parser:Parser) throws -> ForStatement
         {

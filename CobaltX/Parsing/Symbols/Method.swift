@@ -10,13 +10,21 @@ import Foundation
 
 public class Method:Symbol
     {
-    public class func parseMethodDeclaration(from:Parser) throws -> Method
+    private var instances:[MethodInstance] = []
+    
+    public class func parseMethod(from:Parser) throws -> Method
         {
-        fatalError("Not implemented")
+        let method = Method(shortName: "")
+        return(method)
         }
         
     public override var isPackageLevelSymbol:Bool
         {
         return(true)
+        }
+        
+    public func addInstance(_ instance:MethodInstance)
+        {
+        self.instances.append(instance)
         }
     }
