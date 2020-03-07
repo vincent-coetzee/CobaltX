@@ -17,6 +17,8 @@ public enum CompilerError:Error
     case rightBraceExpected
     case leftParExpected
     case rightParExpected
+    case leftBrocketExpected
+    case rightBrocketExpected
     case packageLevelKeywordExpected
     case packageDeclarationExpected
     case genericTypeNameExpected
@@ -44,4 +46,12 @@ public enum CompilerError:Error
     case rightBracketExpectedAfterSubscript
     case variableMustContainExecutable
     case enumerationCaseExpected
+    case nameComponentExpected
+    case enumerationExpected
+    case invalidArrayIndexType
+    case commaExpected
+    case aliasExpected
+    case asExpected
+    case aliasNameExpected
+    case literalValueExpected
     }

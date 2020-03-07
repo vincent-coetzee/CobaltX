@@ -14,5 +14,5 @@ public enum AccessModifier:String
     case `public` = "public"
     case `private` = "private"
     case export = "export"
-    case children = "children"
+    case open = "open"
     }

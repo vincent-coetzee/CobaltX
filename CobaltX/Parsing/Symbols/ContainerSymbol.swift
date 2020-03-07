@@ -10,13 +10,14 @@ import Foundation
 
 public class ContainerSymbol:Symbol,Scope
     {
+    public var parentScope: Scope?
+    
     public override var isScope:Bool
         {
         return(true)
         }
         
     private var symbols:[String:Symbol] = [:]
-    public var parentScope:Scope?
     
     public func addSymbol(_ symbol:Symbol)
         {
@@ -34,6 +35,6 @@ public class ContainerSymbol:Symbol,Scope
             {
             return(symbol)
             }
-        return(self.parent?.lookup(shortName: shortName))
+        return(self.parentScope?.lookup(shortName: shortName))
         }
     }

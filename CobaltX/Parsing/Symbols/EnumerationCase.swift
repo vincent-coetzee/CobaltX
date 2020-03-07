@@ -12,11 +12,6 @@ public class EnumerationCase:Symbol
     {
     public class func parseEnumerationCase(from parser:Parser) throws -> EnumerationCase
         {
-        if !parser.token.isStop
-            {
-            throw(CompilerError.stopPrefixExpectedOnEnumerationCaseName)
-            }
-        try parser.nextToken()
         let name = try parser.matchIdentifier(error: CompilerError.enumerationCaseNameExpected)
         var associatedTypes:[Class] = []
         if parser.token.isLeftPar

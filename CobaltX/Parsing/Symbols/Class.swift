@@ -14,7 +14,7 @@ public class Class:ContainerSymbol
     private var slots:[Slot] = []
     private var classSlots:[Slot] = []
     private var genericParameters:[GenericParameter] = []
-    private var _class = Class(shortName:"Nothing")
+    private var _class:Class?
     
     public class func parseClass(from parser:Parser) throws -> Class
         {
@@ -320,7 +320,7 @@ public class Class:ContainerSymbol
         {
         get
             {
-            return(self._class)
+            return(self._class!)
             }
         set
             {

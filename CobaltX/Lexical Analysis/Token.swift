@@ -62,9 +62,10 @@ public enum Token:Equatable,CustomStringConvertible
         case notEquals = "!="
         case other = "other"
         }
-    
+
     public enum Keyword:String,CaseIterable,Equatable
         {
+        case abstract
         case Anything
         case Array
         case alias
@@ -72,12 +73,12 @@ public enum Token:Equatable,CustomStringConvertible
         case field
         case BitSet
         case Boolean
-        case Byte8
+        case Byte
         case cfunction
-        case Character16
-        case children
+        case Character
         case `class`
         case constant
+        case Date
         case Dictionary
         case `else`
         case enumeration
@@ -93,7 +94,10 @@ public enum Token:Equatable,CustomStringConvertible
         case infix
         case inline
         case instanciate
-        case `internal`
+        case Integer
+        case Integer64
+        case Integer32
+        case Integer16
         case `let`
         case List
         case macro
@@ -103,13 +107,16 @@ public enum Token:Equatable,CustomStringConvertible
         case native
         case next
         case `nil`
+        case Object
         case otherwise
+        case `open`
         case `operator`
         case package
         case postfix
         case prefix
         case `private`
-//        case Range
+        case `public`
+        case Range
         case read
         case `do`
         case `return`
@@ -119,9 +126,6 @@ public enum Token:Equatable,CustomStringConvertible
         case select
         case Set
         case signal
-        case Signed64
-        case Signed32
-        case Signed16
         case slot
         case `static`
         case String
@@ -130,17 +134,20 @@ public enum Token:Equatable,CustomStringConvertible
         case this
         case times
         case Tuple
-        case Unsigned64
-        case Unsigned32
-        case Unsigned16
+        case UInteger
+        case UInteger64
+        case UInteger32
+        case UInteger16
         case unmade
         case unsealed
         case using
+        case value
         case virtual
         case void
         case when
         case `while`
         case with
+        case word
         case write
         }
     
@@ -534,6 +541,17 @@ public enum Token:Equatable,CustomStringConvertible
             }
         }
         
+    public var isAlias:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .alias)
+            default:
+                return(false)
+            }
+        }
+        
     public var isSet:Bool
         {
         switch(self)
@@ -551,6 +569,17 @@ public enum Token:Equatable,CustomStringConvertible
             {
             case .keyword(let value,_):
                 return(value == .Dictionary)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isDate:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .Date)
             default:
                 return(false)
             }
@@ -629,35 +658,41 @@ public enum Token:Equatable,CustomStringConvertible
             case .nativeType(let kind,_):
                 switch(kind)
                     {
-                    case .Signed64:
+                    case .Integer64:
                         fallthrough
-                    case .Unsigned64:
+                    case .UInteger64:
                         fallthrough
-                    case .Signed32:
+                    case .Integer:
                         fallthrough
-                    case .Unsigned32:
+                    case .UInteger:
                         fallthrough
-                    case .Signed16:
+                    case .Integer32:
                         fallthrough
-                    case .Unsigned16:
+                    case .UInteger32:
+                        fallthrough
+                    case .Integer16:
+                        fallthrough
+                    case .UInteger16:
                         fallthrough
                     case .String:
                         fallthrough
-//                    case .Array:
-//                        fallthrough
-//                    case .List:
-//                        fallthrough
-//                    case .Set:
-//                        fallthrough
-//                    case .BitSet:
-//                        fallthrough
-//                    case .Dictionary:
-//                        fallthrough
+                    case .Array:
+                        fallthrough
+                    case .Date:
+                        fallthrough
+                    case .List:
+                        fallthrough
+                    case .Set:
+                        fallthrough
+                    case .BitSet:
+                        fallthrough
+                    case .Dictionary:
+                        fallthrough
                     case .Boolean:
                         fallthrough
-                    case .Byte8:
+                    case .Byte:
                         fallthrough
-                    case .Character16:
+                    case .Character:
                         fallthrough
                     case .Float32:
                         fallthrough
@@ -666,19 +701,13 @@ public enum Token:Equatable,CustomStringConvertible
                     default:
                         break
                     }
-//        case .shard:
-//            fallthrough
-//        case .enumeration:
-//            fallthrough
-//        case .alias:
-//            return(true)
         default:
             return(false)
             }
         return(false)
         }
         
-    public var isInteger:Bool
+    public var isIntegerNumber:Bool
         {
         switch(self)
             {
@@ -689,7 +718,7 @@ public enum Token:Equatable,CustomStringConvertible
             }
         }
     
-    public var isFloatingPoint:Bool
+    public var isFloatingPointNumber:Bool
         {
         switch(self)
             {
@@ -806,6 +835,17 @@ public enum Token:Equatable,CustomStringConvertible
             }
         }
         
+    public var isInteger:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .Integer)
+            default:
+                return(false)
+            }
+        }
+        
     public var isCFunction:Bool
         {
         switch(self)
@@ -823,6 +863,39 @@ public enum Token:Equatable,CustomStringConvertible
             {
             case .keyword(let value,_):
                 return(value == .native)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isExport:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .export)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isAbstract:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .abstract)
+            default:
+                return(false)
+            }
+        }
+        
+    public var isValue:Bool
+        {
+        switch(self)
+            {
+            case .keyword(let value,_):
+                return(value == .value)
             default:
                 return(false)
             }
@@ -1147,7 +1220,7 @@ public enum Token:Equatable,CustomStringConvertible
         switch(self)
             {
             case .keyword(let value,_):
-                return(value == .export || value == .private || value == .children || value == .internal)
+                return(value == .export || value == .private || value == .open || value == .public)
             default:
                 return(false)
             }
@@ -1350,42 +1423,46 @@ public enum Token:Equatable,CustomStringConvertible
                         return(true)
                     case .this:
                         return(true)
-                    case .Signed64:
+                    case .Integer:
                         return(true)
-                    case .Signed32:
+                    case .Integer64:
                         return(true)
-                    case .Signed16:
+                    case .Integer32:
                         return(true)
-                    case .Unsigned64:
+                    case .Integer16:
                         return(true)
-                    case .Unsigned32:
+                    case .UInteger:
                         return(true)
-                    case .Unsigned16:
+                    case .UInteger64:
+                        return(true)
+                    case .UInteger32:
+                        return(true)
+                    case .UInteger16:
                         return(true)
                     case .Boolean:
                         return(true)
                     case .String:
                         return(true)
-                    case .Byte8:
+                    case .Byte:
                         return(true)
-                    case .Character16:
+                    case .Character:
                         return(true)
                     case .Float32:
                         return(true)
                     case .Float64:
                         return(true)
-//                    case .Array:
-//                        return(true)
+                    case .Array:
+                        return(true)
                     case .Symbol:
                         return(true)
-//                    case .List:
-//                        return(true)
-//                    case .Set:
-//                        return(true)
-//                    case .BitSet:
-//                        return(true)
-//                    case .Dictionary:
-//                        return(true)
+                    case .List:
+                        return(true)
+                    case .Set:
+                        return(true)
+                    case .BitSet:
+                        return(true)
+                    case .Dictionary:
+                        return(true)
                     default:
                         break
                     }
@@ -1782,12 +1859,12 @@ public enum Token:Equatable,CustomStringConvertible
             }
         }
     
-    public var isExport:Bool
+    public var isOpen:Bool
         {
         switch(self)
             {
             case .keyword(let value,_):
-                return(value == .export)
+                return(value == .open)
             default:
                 return(false)
             }

@@ -33,7 +33,7 @@ public class GenericParameter:Symbol
                 }
             while parser.token.isComma
             }
-        return(GenericParameter(name: name,constraints: constraints))
+        return(GenericParameter(shortName: name,constraints: constraints))
         }
         
     public class func parseGenericParameters(from parser:Parser) throws -> [GenericParameter]
@@ -51,10 +51,10 @@ public class GenericParameter:Symbol
         
     public let constraints:[Class]
 
-    public init(name:String,constraints:[Class] = [])
+    public init(shortName:String,constraints:[Class] = [])
         {
         self.constraints = constraints
-        super.init(shortName: name)
+        super.init(shortName: shortName)
         }
         
     public func instanciate(with value:Class) -> GenericParameterInstance

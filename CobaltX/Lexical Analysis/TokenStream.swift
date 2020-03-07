@@ -882,7 +882,7 @@ public class TokenStream:Equatable
             {
             self.keywords.append(keyword.rawValue)
             }
-        self.nativeTypes.append(contentsOf: ["Tuple","Float32","Float64","String","List","Array","Dictionary","Set","Boolean","Signed","Unsigned","Signed64","Signed32","Signed16","Unsigned64","Unsigned32","Unsigned16","Character16","Byte8","Symbol"])
+        self.nativeTypes.append(contentsOf: ["Object","Date","Tuple","Float32","Float64","String","List","Array","Dictionary","Set","Boolean","Integer","UInteger","Integer64","Integer32","Integer16","UInteger64","UInteger32","UInteger16","Character","Byte","Symbol"])
         }
     }
 

@@ -11,11 +11,11 @@ import Foundation
 public class Symbol:ParseNode,Equatable
     {
     public let shortName:String
-    public let parent:Symbol?
     public let index = Cobalt.nextIndex()
     public var wasDeclaredForward = false
     private var references:[SourceReference] = []
     public var accessLevel = AccessModifier.public
+    public var parent:Symbol?
     
     public var isScope:Bool
         {
@@ -35,6 +35,11 @@ public class Symbol:ParseNode,Equatable
     public var isClosure:Bool
         {
         return(false)
+        }
+        
+    public var typeName:String
+        {
+        return(self.shortName)
         }
         
     public var `class`:Class

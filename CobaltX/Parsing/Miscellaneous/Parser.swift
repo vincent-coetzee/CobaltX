@@ -112,6 +112,21 @@ public class Parser
         try self.nextToken()
         }
         
+    public func parseBrockets(_ closure:() throws -> Void) throws
+        {
+        if !self.token.isLeftBrocket
+            {
+            throw(CompilerError.leftBrocketExpected)
+            }
+        try self.nextToken()
+        try closure()
+        if !self.token.isRightBrocket
+            {
+            throw(CompilerError.rightBrocketExpected)
+            }
+        try self.nextToken()
+        }
+        
     public func parseAccessModifier(_ closure: (AccessModifier) throws -> Void) throws
         {
         var mustPop = false
@@ -191,22 +206,21 @@ public class Parser
         
     public func parseName() throws -> Name
         {
-        if !self.token.isIdentifier
+        if !(self.token.isIdentifier || self.token.isNativeType)
             {
-            throw(CompilerError.classReferenceExpected)
+            throw(CompilerError.nameComponentExpected)
             }
-        var names:[String] = []
-        repeat
+        var names = self.token.isIdentifier ? [self.token.identifier] : [self.token.keyword.rawValue]
+        try self.nextToken()
+        while self.token.isGluon
             {
-            try self.eatIfStop()
-            if !self.token.isIdentifier
-                {
-                throw(CompilerError.identifierExpected)
-                }
-            names.append(self.token.identifier)
             try self.nextToken()
+            if self.token.isIdentifier
+                {
+                names.append(self.token.identifier)
+                try self.nextToken()
+                }
             }
-        while self.token.isStop
         return(Name(names))
         }
         
@@ -227,10 +241,17 @@ public class Parser
             {
             return(theClass!.instantiate(with: generics!))
             }
-        let newClass = Class(name: name.last)
-        (self.scopeCurrent.lookup(name: name.withoutLast()) as? Scope)?.addSymbol(newClass)
-        newClass.wasDeclaredForward = true
-        return(newClass)
+        else if theClass != nil
+            {
+            return(theClass!)
+            }
+        else
+            {
+            let newClass = Class(name: name.last)
+            (self.scopeCurrent.lookup(name: name.withoutLast()) as? Scope)?.addSymbol(newClass)
+            newClass.wasDeclaredForward = true
+            return(newClass)
+            }
         }
         
     public func eatIfComma() throws
@@ -241,6 +262,13 @@ public class Parser
             }
         }
         
+    public func eatIfGluon() throws
+        {
+        if self.token.isGluon
+            {
+            try self.nextToken()
+            }
+        }
         
     public func eatIfStop() throws
         {
@@ -380,7 +408,23 @@ public class Parser
         
     public func parseLiteralExpression() throws -> LiteralExpression
         {
-        return(LiteralExpression(integer:0))
+        try self.nextToken()
+        if self.lastToken.isString
+            {
+            return(LiteralExpression(string: self.lastToken.string))
+            }
+        else if self.lastToken.isIntegerNumber
+            {
+            return(LiteralExpression(integer: self.lastToken.integer))
+            }
+        else if self.lastToken.isFloatingPointNumber
+            {
+            return(LiteralExpression(float64: self.lastToken.floatingPoint))
+            }
+        else
+            {
+            throw(CompilerError.literalValueExpected)
+            }
         }
         
     @inline(__always)
@@ -668,7 +712,7 @@ public class Parser
             {
             return(try self.parseIdentifierExpression())
             }
-        if self.token.isStop
+        if self.token.isGluon
             {
             return(LiteralExpression(enumerationCase: try EnumerationCase.parseEnumerationCase(from: self)))
             }
@@ -696,7 +740,7 @@ public class Parser
             try self.nextToken()
             return(number)
             }
-        if self.token.isFloatingPoint
+        if self.token.isFloatingPointNumber
             {
             let number = LiteralExpression(float64: self.token.floatingPointValue)
             try self.nextToken()

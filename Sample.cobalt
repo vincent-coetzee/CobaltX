@@ -4,57 +4,27 @@
 //
 
 @system
-package Cobalt
+export package Accounts
     {
-    public class Object
+    public enumeration Currency::Integer
         {
-        private slot header::UInteger64
-        private slot class::Class
+        zar = 0
+        usd = 1
+        aud(Float32) = 2
         }
         
-    export package Collections
+    export alias Array<Currency,Dictionary<Date,Money>> as Currencies
+    
+    open class Money
         {
-        internal enumeration ListNode<Element>
-            {
-            .node(Element,ListNode)
-            .end
-            }
-            
-        export enumeration Optional<Element>
-            {
-            .something(List<Element>)
-            .nothing
-            }
-            
-        export class Collection::Object
-            {
-            @raw(16)
-            readonly slot count::Integer
-            }
+        slot units::Integer = 0
+        slot currency::Currency = ::zar
+        }
         
-        export class List<Element>::Collection
-            {
-            children slot first::ListNode<Element> = .end
-            children slot last::ListNode<Element> = .end
-            }
-            
-        export method make<Element>(-Class::@class(ListNode<Element>)) -> ListNode<Element>
-            {
-            
-            }
-            
-        export method append<Element>(list::List<Element>,element::Element) -> Void
-            {
-            if list.first == .endhttps://builtbytallsteve.tumblr.com/image/187696050534
-                {
-                list.first = make(ListNode<Element>,element)
-                }
-            }
-            
-        @cfunction
-        public method printf(-format::String,-arguments::...) -> Void
-        
-        @native
-        public method first<Element>(collection::Collection<Element>) -> Element
+    open class Accountable
+        {
+        slot key::Integer = 0
+        slot name::String
+        slot balance::Money = make(Money,Cobalt::Integer::0,Currency::zar)
         }
     }

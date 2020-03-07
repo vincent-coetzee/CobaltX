@@ -12,6 +12,11 @@ public class GenericClass:Class
     {
     public var genericParameters:[GenericParameter] = []
     
+    public override var typeName:String
+        {
+        return("\(self.shortName)(\(self.genericParameters.map{$0.shortName}.joined(separator: " x ")))")
+        }
+        
     public init(shortName:String,superclasses:[Class] = [],genericParameters:[GenericParameter] = [])
         {
         self.genericParameters = genericParameters

@@ -54,37 +54,34 @@ public class Package:ContainerSymbol
                     try parser.parseAccessModifier
                         {
                         accessModifier in
-                        if parser.token.isPackageLevelKeyword
+                        var symbol:Symbol
+                        switch(parser.token.keyword)
                             {
-                            var symbol:Symbol
-                            switch(parser.token.keyword)
-                                {
-                                case .package:
-                                    symbol = try Package.parsePackage(from: parser)
-                                case .method:
-                                    symbol = try Method.parseMethod(from: parser)
-                                case .let:
-                                    symbol = try Variable.parseVariable(from: parser)
-                                case .constant:
-                                    symbol = try Constant.parseConstant(from: parser)
-                                case .alias:
-                                    symbol = try Alias.parseAlias(from: parser)
-                                case .class:
-                                    symbol = try Class.parseClass(from: parser)
-                                case .enumeration:
-                                    symbol = try Enumeration.parseEnumeration(from: parser)
-                                case .macro:
-                                    symbol = try Macro.parseMacro(from: parser)
-                                default:
-                                    throw(CompilerError.packageLevelKeywordExpected)
-                                }
-                            symbol.accessLevel = accessModifier
-                            package!.addSymbol(symbol)
+                            case .package:
+                                symbol = try Package.parsePackage(from: parser)
+                            case .method:
+                                symbol = try Method.parseMethod(from: parser)
+                            case .let:
+                                symbol = try Variable.parseVariable(from: parser)
+                            case .constant:
+                                symbol = try Constant.parseConstant(from: parser)
+                            case .alias:
+                                symbol = try Alias.parseAlias(from: parser)
+                            case .abstract:
+                                fallthrough
+                            case .word:
+                                fallthrough
+                            case .class:
+                                symbol = try Class.parseClass(from: parser)
+                            case .enumeration:
+                                symbol = try Enumeration.parseEnumeration(from: parser)
+                            case .macro:
+                                symbol = try Macro.parseMacro(from: parser)
+                            default:
+                                throw(CompilerError.packageLevelKeywordExpected)
                             }
-                        else
-                            {
-                            throw(CompilerError.packageLevelKeywordExpected)
-                            }
+                        symbol.accessLevel = accessModifier
+                        package!.addSymbol(symbol)
                         }
                     }
                 }
