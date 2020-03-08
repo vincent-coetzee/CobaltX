@@ -59,7 +59,6 @@ extension Scope
     public func localScope() -> Scope
         {
         let scope = LocalScope()
-        scope.push()
         return(scope)
         }
     }

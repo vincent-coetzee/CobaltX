@@ -43,7 +43,7 @@ public enum Token:Equatable,CustomStringConvertible
         case bitNot = "~"
         case bitAnd = "&"
         case bitOr = "|"
-        case rightBitShift = ">>"
+//        case rightBitShift = ">>"
         case leftBitShift = "<<"
         case mulEquals = "*="
         case divEquals = "/="
@@ -534,7 +534,7 @@ public enum Token:Equatable,CustomStringConvertible
         {
         switch(self)
             {
-            case .keyword(let value,_):
+            case .nativeType(let value,_):
                 return(value == .Array)
             default:
                 return(false)
@@ -556,7 +556,7 @@ public enum Token:Equatable,CustomStringConvertible
         {
         switch(self)
             {
-            case .keyword(let value,_):
+            case .nativeType(let value,_):
                 return(value == .Set)
             default:
                 return(false)
@@ -567,7 +567,7 @@ public enum Token:Equatable,CustomStringConvertible
         {
         switch(self)
             {
-            case .keyword(let value,_):
+            case .nativeType(let value,_):
                 return(value == .Dictionary)
             default:
                 return(false)
@@ -578,7 +578,7 @@ public enum Token:Equatable,CustomStringConvertible
         {
         switch(self)
             {
-            case .keyword(let value,_):
+            case .nativeType(let value,_):
                 return(value == .Date)
             default:
                 return(false)
@@ -589,7 +589,7 @@ public enum Token:Equatable,CustomStringConvertible
         {
         switch(self)
             {
-            case .keyword(let value,_):
+            case .nativeType(let value,_):
                 return(value == .List)
             default:
                 return(false)
@@ -600,7 +600,7 @@ public enum Token:Equatable,CustomStringConvertible
         {
         switch(self)
             {
-            case .keyword(let value,_):
+            case .nativeType(let value,_):
                 return(value == .BitSet)
             default:
                 return(false)
@@ -1516,17 +1516,17 @@ public enum Token:Equatable,CustomStringConvertible
                 return(false)
             }
         }
-    
-    public var isRightBitShift:Bool
-        {
-        switch(self)
-            {
-            case .symbol(let value,_):
-                return(value == .rightBitShift)
-            default:
-                return(false)
-            }
-        }
+//    
+//    public var isRightBitShift:Bool
+//        {
+//        switch(self)
+//            {
+//            case .symbol(let value,_):
+//                return(value == .rightBitShift)
+//            default:
+//                return(false)
+//            }
+//        }
         
     public var isLeftBitShift:Bool
         {
@@ -1912,18 +1912,18 @@ public enum Token:Equatable,CustomStringConvertible
                 return(false)
             }
         }
-    
-    public var isBitShiftRight:Bool
-        {
-        switch(self)
-            {
-            case .symbol(let value,_):
-                return(value == .rightBitShift)
-            default:
-                return(false)
-            }
-        }
-        
+//    
+//    public var isBitShiftRight:Bool
+//        {
+//        switch(self)
+//            {
+//            case .symbol(let value,_):
+//                return(value == .rightBitShift)
+//            default:
+//                return(false)
+//            }
+//        }
+//        
     public var isBitShiftLeft:Bool
         {
         switch(self)

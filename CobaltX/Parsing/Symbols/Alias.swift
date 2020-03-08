@@ -31,7 +31,9 @@ public class Alias:Symbol
             }
         let name = parser.token.identifier
         try parser.nextToken()
-        return(Alias(shortName: name,class:aClass))
+        let alias = Alias(shortName: name,class:aClass)
+        parser.scopeCurrent.addSymbol(alias)
+        return(alias)
         }
         
     public init(shortName:String,class:Class)

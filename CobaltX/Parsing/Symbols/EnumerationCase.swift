@@ -22,9 +22,15 @@ public class EnumerationCase:Symbol
         if parser.token.isAssign
             {
             try parser.nextToken()
-            value = try parser.parseLiteralExpression()
+            value = try Expression.parseLiteralExpression(from:parser)
             }
         return(EnumerationCase(name: name,associatedValueClasses: associatedTypes,value: value))
+        }
+        
+    public class func parseEnumerationCaseInstance(from parser:Parser) throws -> EnumerationCase
+        {
+        let name = try parser.matchIdentifier(error: CompilerError.enumerationCaseNameExpected)
+        return(EnumerationCase(name: name,associatedValueClasses:[]))
         }
         
     public private(set) var associatedValueClasses:[Class]

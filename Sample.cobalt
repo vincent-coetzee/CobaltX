@@ -25,6 +25,13 @@ export package Accounts
         {
         slot key::Integer = 0
         slot name::String
-        slot balance::Money = make(Money,Cobalt::Integer::0,Currency::zar)
+        slot balance = make(Money,Cobalt::Integer::0,Currency::zar)
+        }
+        
+    export method print(money::Object) -> Void
+    
+    method print(money::Money) -> Void
+        {
+        print(format("###,###.## ###",money.units / 100.0,rawValue(money.currency)))
         }
     }

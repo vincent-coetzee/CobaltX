@@ -11,11 +11,6 @@ import Foundation
 public class Package:ContainerSymbol
     {
     public static let rootPackage = CobaltPackage(shortName: "Cobalt").initCobaltPackage()
-    
-    public class func canParse(token:Token) -> Bool
-        {
-        return(token.isPackage)
-        }
         
     public class func parsePackage(from parser:Parser) throws -> Package
         {

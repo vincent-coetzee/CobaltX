@@ -8,7 +8,7 @@
 
 import Foundation
 
-public enum ArrayIndexType
+public enum ArrayIndexType:Equatable
     {
     case none
     case size(Int)
@@ -26,7 +26,7 @@ public enum ArrayIndexType
             case .range(let lower,let upper):
                 return("RangeIndex(\(lower),\(upper))")
             case .enumeration(let enumeration):
-                return("EnumerationIndex(\(enumeration))")
+                return("EnumerationIndex(\(enumeration.shortName))")
             }
         }
     }
@@ -35,6 +35,16 @@ public class ArrayClass:GenericClass
     {
     private let indexType:ArrayIndexType
     private let elementClass:Class
+    
+    public static func ==(lhs:ArrayClass,rhs:Class) -> Bool
+        {
+        if !(rhs is ArrayClass)
+            {
+            return(false)
+            }
+        let rhsArray = rhs as! ArrayClass
+        return(lhs.indexType == rhsArray.indexType && lhs.elementClass == rhsArray.elementClass)
+        }
     
     public class func typeName(forIndexType indexType:ArrayIndexType,forElementClass elementType:Class) -> String
         {
@@ -62,7 +72,6 @@ public class ArrayClass:GenericClass
             return(type)
             }
         let type = ArrayClass(indexType: indexType, elementClass: aClass)
-        parser.scopeCurrent.addSymbol(type)
         return(type)
         }
         

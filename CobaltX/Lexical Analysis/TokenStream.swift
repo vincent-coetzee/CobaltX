@@ -54,7 +54,7 @@ public class TokenStream:Equatable
     private let symbols = CharacterSet(charactersIn: "=<>-+*/%!&|^\\/~:.,$()[]:.{},@?")
     private let hexDigits = CharacterSet(charactersIn: "ABCDEF0123456789_")
     private let binaryDigits = CharacterSet(charactersIn: "01_")
-    private let operatorSymbols = CharacterSet(charactersIn: "=<>-+*/%!&|^\\~@$?")
+    private let operatorSymbols = CharacterSet(charactersIn: "=<-+*/%!&|^\\~@$?")
     private var tokenStart:Int = 0
     private var tokenStop:Int = 0
     private var lineStart:Int = 0

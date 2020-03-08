@@ -12,10 +12,24 @@ public class Method:Symbol
     {
     private var instances:[MethodInstance] = []
     
-    public class func parseMethod(from:Parser) throws -> Method
+    public class func parseMethod(from parser:Parser) throws -> Method
         {
-        let method = Method(shortName: "")
-        return(method)
+        try parser.nextToken()
+        let name = try parser.matchIdentifier(error: .methodNameExpected)
+        var theMethod:Method
+        if let method = parser.scopeCurrent.lookup(shortName: name) as? Method
+            {
+            theMethod = method
+            }
+        else
+            {
+            throw(CompilerError.multiMethodNeedsDefinitionBeforeInstance(name))
+            }
+        if parser.token.isLeftBrace
+            {
+            theMethod.addInstance(try MethodInstance.parseMethodInstance(shortName:name,from:parser))
+            }
+        return(theMethod)
         }
         
     public override var isPackageLevelSymbol:Bool

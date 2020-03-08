@@ -16,6 +16,15 @@ public class Class:ContainerSymbol
     private var genericParameters:[GenericParameter] = []
     private var _class:Class?
     
+    public static func ==(lhs:Class,rhs:Class) -> Bool
+        {
+        if lhs.name == rhs.name
+            {
+            return(true)
+            }
+        return(false)
+        }
+        
     public class func parseClass(from parser:Parser) throws -> Class
         {
         let accessModifier = parser.currentAccessModifier
@@ -44,6 +53,7 @@ public class Class:ContainerSymbol
                 }
             }
         let scope = parser.scopeCurrent.localScope()
+        scope.push()
         scope.addSymbols(generics)
         let slots = try self.parseSlots(from: parser)
         var theClass:Class
@@ -94,7 +104,7 @@ public class Class:ContainerSymbol
             {
             return(try DictionaryClass.parseDictionaryClassReference(from: parser))
             }
-        else if parser.token.isIdentifier
+        else if parser.token.isIdentifier || parser.token.isNativeType
             {
             let name = try parser.parseName()
             var theClass:Class?
@@ -111,10 +121,17 @@ public class Class:ContainerSymbol
                 {
                 return(theClass!.instantiate(with: generics!))
                 }
-            let newClass = Class(shortName: name.last)
-            (parser.scopeCurrent.lookup(name: name.withoutLast()) as? Scope)?.addSymbol(newClass)
-            newClass.wasDeclaredForward = true
-            return(newClass)
+            else if theClass != nil
+                {
+                return(theClass!)
+                }
+            else
+                {
+                let newClass = Class(shortName: name.last)
+                (parser.scopeCurrent.lookup(name: name.withoutLast()) as? Scope)?.addSymbol(newClass)
+                newClass.wasDeclaredForward = true
+                return(newClass)
+                }
             }
         else
             {
@@ -183,11 +200,13 @@ public class Class:ContainerSymbol
             try parser.matchGluon()
             typeClass = try parser.parseClassReference()
             }
-        else if parser.token.isAssign
+        parser.rulingClass = typeClass
+        if parser.token.isAssign
             {
             try parser.nextToken()
-            value = try  parser.parseExpression()
+            value = try  Expression.parseExpression(from:parser)
             }
+        parser.rulingClass = nil
         if typeClass == nil && value == nil
             {
             throw(CompilerError.slotRequiresInitialValueOrTypeClass)
@@ -196,7 +215,7 @@ public class Class:ContainerSymbol
             {
             typeClass = value!.class
             }
-        let slot = Slot(name: name,class:typeClass!,isClassSlot: isClass,value: try parser.parseExpression())
+        let slot = Slot(name: name,class:typeClass!,isClassSlot: isClass,value: value)
         slot.isClassSlot = isClass
         return(slot)
         }
@@ -222,12 +241,14 @@ public class Class:ContainerSymbol
             try parser.matchGluon()
             typeClass = try parser.parseClassReference()
             }
+        parser.rulingClass = typeClass
         if !parser.token.isAssign
             {
             throw(CompilerError.assignExpected)
             }
         try parser.nextToken()
-        let slot = ConstantSlot(name: name,class:typeClass,isClassSlot:isClass,value: try parser.parseExpression())
+        let slot = ConstantSlot(name: name,class:typeClass,isClassSlot:isClass,value: try Expression.parseExpression(from: parser))
+        parser.rulingClass = nil
         slot.isClassSlot = isClass
         return(slot)
         }
@@ -259,23 +280,23 @@ public class Class:ContainerSymbol
             {
             if parser.token.isRead
                 {
-                readBlock = try parser.parseVirtualSlotBlock()
+                readBlock = try VirtualSlotReadBlock.parseVirtualSlotBlock(from: parser)
                 }
             else if parser.token.isWrite
                 {
-                writeBlock = try parser.parseVirtualSlotBlock(typeClass:typeClass)
+                writeBlock = try VirtualSlotWriteBlock.parseVirtualSlotBlock(typeClass:typeClass,from: parser)
                 }
             else
                 {
-                readBlock = try parser.parseVirtualSlotBlock()
+                readBlock = try VirtualSlotReadBlock.parseVirtualSlotBlock(from: parser)
                 }
             if writeBlock == nil && parser.token.isWrite
                 {
-                writeBlock = try parser.parseVirtualSlotBlock(typeClass:typeClass)
+                writeBlock = try VirtualSlotWriteBlock.parseVirtualSlotBlock(typeClass:typeClass,from:parser)
                 }
             else if readBlock == nil && parser.token.isRead
                 {
-                readBlock = try parser.parseVirtualSlotBlock()
+                readBlock = try VirtualSlotReadBlock.parseVirtualSlotBlock(from: parser)
                 }
             }
         if readBlock == nil
@@ -301,9 +322,9 @@ public class Class:ContainerSymbol
             {
             return(true)
             }
-        for someClass in self.superclasses
+        for superclass in self.superclasses
             {
-            if someClass.isSubclass(of: theClass)
+            if superclass.isSubclass(of: theClass)
                 {
                 return(true)
                 }

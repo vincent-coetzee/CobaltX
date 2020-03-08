@@ -25,7 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         catch let error
             {
-            print("parsing failed with \(error)")
+            print("parsing failed @ line \(Parser.shared.location.line) with \(error)")
             }
         }
 

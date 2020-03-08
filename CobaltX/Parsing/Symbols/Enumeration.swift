@@ -22,6 +22,7 @@ public class Enumeration:ContainerSymbol
             typeClass = try parser.parseClassReference()
             }
         let enumeration = Enumeration(name: name,class:typeClass)
+        enumeration.push()
         try parser.parseBraces
             {
             var index = 0
@@ -36,6 +37,7 @@ public class Enumeration:ContainerSymbol
             while !parser.token.isRightBrace
             }
         enumeration.accessLevel = accessModifier
+        enumeration.pop()
         return(enumeration)
         }
         
@@ -67,6 +69,6 @@ public class Enumeration:ContainerSymbol
                 return(aCase)
                 }
             }
-        return(nil)
+        return(self.parentScope?.lookup(shortName: shortName))
         }
     }

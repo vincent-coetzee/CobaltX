@@ -54,4 +54,9 @@ public enum CompilerError:Error
     case asExpected
     case aliasNameExpected
     case literalValueExpected
+    case dictionaryExpected
+    case listExpected
+    case setExpected
+    case methodNameExpected
+    case multiMethodNeedsDefinitionBeforeInstance(String)
     }

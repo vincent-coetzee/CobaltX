@@ -27,6 +27,7 @@ public class ContainerSymbol:Symbol,Scope
             return
             }
         self.symbols[symbol.shortName] = symbol
+        symbol.parent = self
         }
         
     public override func lookup(shortName:String) -> Symbol?

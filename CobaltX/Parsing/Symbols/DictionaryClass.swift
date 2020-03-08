@@ -12,10 +12,32 @@ public class DictionaryClass:GenericClass
     {
     private let elementClass:Class
     private let keyClass:Class
-    
+        
     public class func parseDictionaryClassReference(from parser:Parser) throws -> DictionaryClass
         {
-        fatalError("\(#function) has not been implemented")
+        if !parser.token.isDictionary
+            {
+            throw(CompilerError.dictionaryExpected)
+            }
+        try parser.nextToken()
+        var keyType:Class = Package.rootPackage.objectClass
+        var valueType:Class = Package.rootPackage.objectClass
+        try parser.parseBrockets
+            {
+            keyType = try Class.parseClassReference(from: parser)
+            if !parser.token.isComma
+                {
+                throw(CompilerError.commaExpected)
+                }
+            try parser.nextToken()
+            valueType = try Class.parseClassReference(from: parser)
+            }
+        return(DictionaryClass(keyClass: keyType, elementClass: valueType))
+        }
+        
+    public override var typeName:String
+        {
+        return("\(self.name)< \(self.keyClass.typeName) x \(self.elementClass.typeName) >")
         }
         
     public init(keyClass:Class,elementClass:Class)

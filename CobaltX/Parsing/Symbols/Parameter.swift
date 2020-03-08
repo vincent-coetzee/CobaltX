@@ -67,7 +67,7 @@ public class Parameter:Variable
             tag = parser.token.tag
             try parser.nextToken()
             }
-        let value = try parser.parseExpression()
+        let value = try Expression.parseExpression(from: parser)
         return(Argument(tag: tag, value: value))
         }
         

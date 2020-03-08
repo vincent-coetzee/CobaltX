@@ -13,10 +13,17 @@ public class MethodInstance:Symbol
     private let block = Block()
     public var parameters:[Parameter] = []
     
-    public class func parseMethodInstanceDeclaration(from:Parser) throws -> MethodInstance
+    public class func parseMethodInstance(shortName:String,from parser:Parser) throws -> MethodInstance
         {
-        let instance = MethodInstance(shortName: "")
+        let instance = MethodInstance(shortName:shortName)
         instance.push()
+        try parser.parseBraces
+            {
+            while !parser.token.isRightBrace
+                {
+                try Statement.parseStatements(from: parser, into: instance.block)
+                }
+            }
         instance.pop()
         return(instance)
         }
