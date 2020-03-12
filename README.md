@@ -1,0 +1,14 @@
+# CobaltX
+macOS based compiler written in Swift 5.0 for the Cobalt language ( both the compiler and the language are works in progress ). Cobalt has classes, with multiple inheritance and multi methods. It has Arrays, Sets, Lists, Dictionaries and BitSets as first class objects. It supports nested packages and generics both for user defined classes and packages.
+
+( Multimethods are generic methods where dispatch is based on the type of every parameter AND the result type of a method, not just the single target of a method invocation as in traditional OO languages). I started developing it because I wanted to achieve a few things
+
+I wanted to experiment with the concept of mixins
+I wanted a language that had multiple inheritance, mixins, generic methods
+I wanted to learn some more advanced compiler techniques and optimizations
+I wanted to learn about generic multimethods
+I wanted to learn about designing opcode instruction formats
+I wanted to learn about writing a virtual machine
+Cobalt ( which is still incomplete at this stage but advances more every day ) has a compiler that is a slowly becoming more sophisticated. The Cobalt Parser converts the Cobalt language into a somewhat Abstract Syntax Tree. The Cobalt Compiler then converts this into a 3 address code / SSA format intermediate representation ( IR ). The compiler has several passes which analyze the IR by first converting the IR into a Basic Block based Flow Graph. This graph is then acted on by several different optimizers, and finally is used to generate the Virtual Machine Code. The machine instruction format is fairly typical of a modern CISC machine with 32 general purpose registers and 32 floating point registers. Instructions typically involve three registers or two registers and an immediate value, addressing is direct, indirect, and register indirect.
+
+Cobalt natively supports Boolean,Integer, Byte, Float, BitMap, Dictionary, Array, List, Set, Symbol and String types. It supports 32 bit and 64 bit floating point representations however because the VM will make use of tagged pointers, the precision on Float64 values is redeuced. The top 4 bits of any value are a tag that the VM uses to know how to handle values. Garbage collection is built in to the Cobalt VM with a Generational Copying Garbage Collector I developed. The VM memory consists of both a static data segment and two object spaces, objects are allocated in one space, and when memory is low reachable objects are copied to the second space, leaving behind non referenced objects. The stack, data segment, and VM registers are all scavenged for object references when a garbage collection ( or flip ) takes place. The VM is tweaked for some of the demanding operations Argon needs, such as multimethod dispatch and nextMethod invocation in multimethods, object allocation, garbage collection and access to root objects during garbage collection.
